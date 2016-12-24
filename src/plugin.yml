@@ -1,0 +1,7 @@
+name: SGClear
+version: 2.0
+author: Rukes
+main: me.rukes.sgclear.Main
+commands:
+    findsg:
+        description: Show target players world
