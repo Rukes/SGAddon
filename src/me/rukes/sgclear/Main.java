@@ -20,6 +20,9 @@ import org.bukkit.potion.PotionEffectType;
 
 public class Main extends JavaPlugin implements Listener{
     
+    public boolean ClearInv = false;
+    public boolean DeathRegen = true;
+    public boolean Soups = true;
     
     @Override
     public void onEnable(){
@@ -33,7 +36,10 @@ public class Main extends JavaPlugin implements Listener{
     }
     
     @EventHandler
-    public void onJoin(PlayerJoinEvent e){
+    public void onPlayerJoin(PlayerJoinEvent e){
+        if(!ClearInv){
+            return;
+        }
         Player p = e.getPlayer();
         p.getInventory().clear();
         p.getInventory().setArmorContents(null);
@@ -55,26 +61,41 @@ public class Main extends JavaPlugin implements Listener{
     }
     
     @EventHandler
-    public void deathRegen(PlayerDeathEvent e){
-        if(e.getEntity().getKiller() != null){
-            Player p = e.getEntity().getKiller();
-            p.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, 80, 2));
-            e.getEntity().sendMessage("§8[§6SG§8] §7Player §8"+p.getName()+" §7killed you with §c"+p.getHealth()+" §7remaining health.");
+    public void onPlayerDeath(PlayerDeathEvent e){
+        if(!DeathRegen){
+            return;
         }
+        if(e.getEntity().getKiller() == null){
+            return;
+        }
+        Player p = e.getEntity().getKiller();
+        p.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, 80, 2));
+        e.getEntity().sendMessage("§8[§6SG§8] §7Player §8"+p.getName()+" §7killed you with §c"+p.getHealth()+" §7remaining health.");
     }
     
     @EventHandler
-    public void HealSoupEvent(PlayerInteractEvent e){
-        Player p = e.getPlayer();
-            if(p.getInventory().getItemInHand().getType() == Material.MUSHROOM_SOUP){
-                if((e.getAction() == Action.RIGHT_CLICK_AIR || e.getAction() == Action.RIGHT_CLICK_BLOCK) && (p.getGameMode() == GameMode.SURVIVAL)){
-                    e.setCancelled(true);
-                    p.getInventory().setItemInHand(new ItemStack(Material.AIR));
-                    p.playSound(p.getLocation(), Sound.EAT, 1F, 1F);
-                    p.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, 60, 2));
-                    p.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 60, 1));
-                    p.setFoodLevel(p.getFoodLevel()+5);
-            }
+    public void onPlayerInteract(PlayerInteractEvent e){
+        if(!Soups){
+            return;
         }
+        if(e.getItem() == null){
+            return;
+        }
+        if(!e.getItem().getType().equals(Material.MUSHROOM_SOUP)){
+            return;
+        }
+        if(!e.getAction().equals(Action.RIGHT_CLICK_BLOCK) || e.getAction().equals(Action.RIGHT_CLICK_AIR)){
+            return;
+        }
+        Player p = e.getPlayer();
+        if(!p.getGameMode().equals(GameMode.SURVIVAL)){
+            return;
+        }
+        e.setCancelled(true);
+        p.getInventory().setItemInHand(new ItemStack(Material.AIR));
+        p.playSound(p.getLocation(), Sound.EAT, 1F, 1F);
+        p.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, 60, 2));
+        p.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 60, 1));
+        p.setFoodLevel(p.getFoodLevel()+5);
     }
 }
